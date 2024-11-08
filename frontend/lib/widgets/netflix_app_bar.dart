@@ -9,20 +9,20 @@ class NetflixAppBar extends StatefulWidget implements PreferredSizeWidget {
   _NetflixAppBarState createState() => _NetflixAppBarState();
 
   @override
-  Size get preferredSize => Size.fromHeight(400); // Adjusted height to accommodate content on mobile
+  Size get preferredSize => Size.fromHeight(400);
 }
 
 class _NetflixAppBarState extends State<NetflixAppBar> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(); // Key for controlling the Scaffold
   final PageController _pageController = PageController();
   int _currentPage = 0;
   Timer? _timer;
+  bool _isDarkMode = true; // Start in Dark Mode
 
-  // Sample movie images (replace with actual movie poster URLs if available)
   final List<String> _movieImages = [
     'https://image.tmdb.org/t/p/w500/8UlWHLMpgZm9bx6QYh0NFoq67TZ.jpg',
     'https://image.tmdb.org/t/p/w500/qAZ0pzat24kLdO3o8ejmbLxyOac.jpg',
     'https://image.tmdb.org/t/p/w500/xCEg6KowNISWvMh8GvPSxtdf9TO.jpg',
-    'https://image.tmdb.org/t/p/w500/kqjL17yufvn9OVLyXYpvtyrFfak.jpg',
     'https://image.tmdb.org/t/p/w500/4q2hz2m8hubgvijz8Ez0T2Os2Yv.jpg'
   ];
 
@@ -55,22 +55,160 @@ class _NetflixAppBarState extends State<NetflixAppBar> {
     super.dispose();
   }
 
+  // Toggle Dark Mode
+  void _toggleDarkMode() {
+    setState(() {
+      _isDarkMode = !_isDarkMode;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final double screenHeight = MediaQuery.of(context).size.height;
-    
-    return AppBar(
-      backgroundColor: Colors.black,
-      automaticallyImplyLeading: false,
-      flexibleSpace: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final double squareImageSize = MediaQuery.of(context).size.width * 0.45;
+    final Color backgroundColor = _isDarkMode ? Colors.black : Colors.white;
+    final Color textColor = _isDarkMode ? Colors.white : Colors.black;
+    final Color buttonColor = _isDarkMode ? Colors.redAccent : Colors.black;
+
+    return Scaffold(
+      key: _scaffoldKey, // Assign the key to the Scaffold
+      backgroundColor: backgroundColor,
+      appBar: AppBar(
+        backgroundColor: backgroundColor,
+        title: Text('Pavflix', style: TextStyle(color: buttonColor)),
+        actions: [
+          // Menu Button at Top Right
+          IconButton(
+            icon: Icon(Icons.menu, color: buttonColor),
+            onPressed: () {
+              _scaffoldKey.currentState?.openEndDrawer(); // Open Drawer from the top right
+            },
+          ),
+        ],
+      ),
+      endDrawer: Drawer(
+        backgroundColor: backgroundColor, // Dynamic background color for Drawer
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
-            // Top Row with Navigation Buttons
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: buttonColor,
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(color: textColor, fontSize: 24),
+              ),
+            ),
+            // Settings Option
+            ListTile(
+              leading: Icon(Icons.settings, color: buttonColor),
+              title: Text('Settings', style: TextStyle(color: textColor)),
+              onTap: () {
+                Navigator.pop(context);
+                // Navigate to settings screen
+              },
+            ),
+            // Dark Mode Toggle
+            ListTile(
+              leading: Icon(
+                _isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                color: buttonColor,
+              ),
+              title: Text('Dark Mode', style: TextStyle(color: textColor)),
+              trailing: Switch(
+                value: !_isDarkMode,
+                onChanged: (value) => _toggleDarkMode(),
+              ),
+            ),
+            // User Profile Option
+            ListTile(
+              leading: Icon(Icons.person, color: buttonColor),
+              title: Text('User Profile', style: TextStyle(color: textColor)),
+              onTap: () {
+                Navigator.pop(context);
+                // Navigate to user profile screen
+              },
+            ),
+            // Notifications Option
+            ListTile(
+              leading: Icon(Icons.notifications, color: buttonColor),
+              title: Text('Notifications', style: TextStyle(color: textColor)),
+              onTap: () {
+                Navigator.pop(context);
+                // Navigate to notifications screen
+              },
+            ),
+            // Help & Support Option
+            ListTile(
+              leading: Icon(Icons.help, color: buttonColor),
+              title: Text('Help & Support', style: TextStyle(color: textColor)),
+              onTap: () {
+                Navigator.pop(context);
+                // Navigate to help screen
+              },
+            ),
+          ],
+        ),
+      ),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Centered Square Image Carousel
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 8.0),
+              height: squareImageSize, // Square image size
+              width: squareImageSize,
+              child: PageView.builder(
+                controller: _pageController,
+                itemCount: _movieImages.length,
+                itemBuilder: (context, index) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      _movieImages[index],
+                      fit: BoxFit.cover,
+                    ),
+                  );
+                },
+              ),
+            ),
+            // Welcome Message
             Padding(
-              padding: const EdgeInsets.only(top: 10, right: 20, left: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Column(
+                children: [
+                  Text(
+                    "Welcome to Pavflix",
+                    style: TextStyle(
+                      color: buttonColor,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    "Dive into endless worlds of movies, curated just for you.",
+                    style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    "Discover, save, and share your favorite films anytime, anywhere, "
+                    "with the ultimate streaming experience.",
+                    style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 14),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+            Spacer(),
+            // Bottom Navigation Buttons
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   // Home Button
                   GestureDetector(
@@ -80,12 +218,12 @@ class _NetflixAppBarState extends State<NetflixAppBar> {
                         MaterialPageRoute(builder: (context) => HomeScreen()),
                       );
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(
-                        "Home",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
+                    child: Column(
+                      children: [
+                        Icon(Icons.home, color: buttonColor, size: 28),
+                        SizedBox(height: 4),
+                        Text("Home", style: TextStyle(color: buttonColor, fontSize: 14)),
+                      ],
                     ),
                   ),
                   // Movies Button
@@ -96,12 +234,12 @@ class _NetflixAppBarState extends State<NetflixAppBar> {
                         MaterialPageRoute(builder: (context) => AddMovieScreen()),
                       );
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(
-                        "Movies",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
+                    child: Column(
+                      children: [
+                        Icon(Icons.movie, color: buttonColor, size: 28),
+                        SizedBox(height: 4),
+                        Text("Movies", style: TextStyle(color: buttonColor, fontSize: 14)),
+                      ],
                     ),
                   ),
                   // Watchlist Button
@@ -112,72 +250,13 @@ class _NetflixAppBarState extends State<NetflixAppBar> {
                         MaterialPageRoute(builder: (context) => AddWatchlistScreen()),
                       );
                     },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(
-                        "Watchlist",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
+                    child: Column(
+                      children: [
+                        Icon(Icons.bookmark, color: buttonColor, size: 28),
+                        SizedBox(height: 4),
+                        Text("Watchlist", style: TextStyle(color: buttonColor, fontSize: 14)),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-            ),
-            // Movie Image Carousel (Smaller Image Size)
-            Expanded(
-              child: Container(
-                margin: EdgeInsets.symmetric(vertical: 8.0),
-                height: screenHeight * 0.25, // Adjusted height to scale with screen
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: _movieImages.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
-                          _movieImages[index],
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-            // Welcome Message
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Text(
-                    "Welcome to Pavflix",
-                    style: TextStyle(
-                      color: Colors.redAccent,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    "Dive into endless worlds of movies, curated just for you.",
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    "Discover, save, and share your favorite films anytime, anywhere, "
-                    "with the ultimate streaming experience.",
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                    textAlign: TextAlign.center,
                   ),
                 ],
               ),

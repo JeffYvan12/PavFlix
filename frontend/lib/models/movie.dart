@@ -7,6 +7,7 @@ class Movie {
   final String releaseDate;
   final String overview;
   final String posterPath;
+  final String posterUrl;  // This property holds the URL for the movie poster image
 
   Movie({
     required this.id,
@@ -17,6 +18,7 @@ class Movie {
     required this.releaseDate,
     required this.overview,
     required this.posterPath,
+    required this.posterUrl,
   });
 
   factory Movie.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class Movie {
       releaseDate: json['release_date'],
       overview: json['overview'],
       posterPath: json['poster_path'],
+      posterUrl: 'https://image.tmdb.org/t/p/w500' + json['poster_path'],  // Assuming the JSON has a 'poster_path' field
     );
   }
 }

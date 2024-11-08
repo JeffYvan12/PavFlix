@@ -9,6 +9,9 @@ require('dotenv').config();
 const app = express();
 connectDB();
 
+app.get('/hello',(req,res)=>{
+    res.send('Hello Joseph');
+ });
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/movies', movieRoutes);
